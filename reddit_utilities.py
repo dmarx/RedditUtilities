@@ -5,18 +5,41 @@ import matplotlib.pyplot as plt
 from collections import Counter
  
 class UserScraper(object):
-    '''Generic utility for investigating redditors'''
+    '''Generic utility for investigating redditors. '''
     def __init__(self
                 , username
-                , useragent = 'Scraper class for investigating redditors by /u/shaggorama'):
-        self.r = praw.Reddit(useragent)
+                , useragent = 'Scraper class for investigating redditors by /u/shaggorama'
+                ,r=None):
+        if not r:
+            self.r = praw.Reddit(useragent)
         self.user = self.r.get_redditor(username)
-        self.comments = []
-        self.submissions = []
+        self._comments = []
+        self._submissions = []
+        
+    @property
+    def comments(self):
+        if not self._comments:
+            self.scrape_comments()
+        return self._comments
+    
+    @property
+    def submissions(self):
+        if not self._submissions:
+            self.scrape_submissions()
+        return self._submissions
+    
+    def scrape_comments(self):
+        print "\nGetting comments"
+        self.scrape_content('comments')
+    
+    def scrape_submissions(self):
+        print "\nGetting submissions"
+        self.scrape_content('posts')
+    
     def scrape_content(self, type, kargs={}):
         '''Generic function for scraping comments or posts'''
         funcs = {'comments':self.user.get_comments, 'posts':self.user.get_submitted}
-        memo  = {'comments':self.comments,          'posts':self.submissions}
+        memo  = {'comments':self._comments,          'posts':self._submissions}
         params = {'limit':None}        
         params.update(kargs)
         gen = apply(funcs[type], [], params)
@@ -31,14 +54,6 @@ class UserScraper(object):
                 break
         print n, type, "scraped"
     
-    def scrape_comments(self):
-        print "\nGetting comments"
-        self.scrape_content('comments')
-    
-    def scrape_submissions(self):
-        print "\nGetting submissions"
-        self.scrape_content('posts')
-    
     def content_activity_profile(self, content):        
         pivot = {}
         for d in [c.created_utc for c in content]:
@@ -48,17 +63,17 @@ class UserScraper(object):
         return pd.Series(pivot)
     
     def get_comment_activity_profile(self, plot=True):
-        if not self.comments:
+        if not self._comments:
             self.scrape_comments()
-        self.comment_activity_profile = self.content_activity_profile(self.comments)
+        self.comment_activity_profile = self.content_activity_profile(self._comments)
         if plot:
             self.comment_activity_profile.plot()
             plt.show()
             
     def get_submission_activity_profile(self, plot=True):
-        if not self.submissions:
+        if not self._submissions:
             self.scrape_submissions()
-        self.submission_activity_profile = self.content_activity_profile(self.submissions)
+        self.submission_activity_profile = self.content_activity_profile(self._submissions)
         if plot:
             self.submission_activity_profile.plot()
             plt.show()
@@ -72,12 +87,12 @@ class UserScraper(object):
             plt.show()
     
     def get_user_subreddits(self, use_comments=True, use_submissions=True, report=10):
-        if not self.submissions and use_submissions:
+        if not self._submissions and use_submissions:
             self.scrape_submissions()
-        if not self.comments and use_comments:
+        if not self._comments and use_comments:
             self.scrape_comments()
-        by_comment = [c.subreddit.display_name for c in self.comments]
-        by_submission = [c.subreddit.display_name for c in self.submissions]
+        by_comment = [c.subreddit.display_name for c in self._comments]
+        by_submission = [c.subreddit.display_name for c in self._submissions]
         self.user_subreddits = Counter(by_comment + by_submission)
         main_subr = self.user_subreddits.most_common()
         row = "{col1}\t{col2}\t{col3}"
