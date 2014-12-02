@@ -1,14 +1,17 @@
 import praw
+from praw.helpers import flatten_comments
 import time
 import pandas as pd
 import matplotlib.pyplot as plt
 from collections import Counter
+
+UA = 'Scraper class for investigating redditors by /u/shaggorama'
  
 class UserScraper(object):
     '''Generic utility for investigating redditors. '''
     def __init__(self
                 , username
-                , useragent = 'Scraper class for investigating redditors by /u/shaggorama'
+                , useragent = UA
                 ,r=None):
         self.r = r
         if not r:
@@ -16,7 +19,7 @@ class UserScraper(object):
         self.user = self.r.get_redditor(username)
         self._comments = []
         self._submissions = []
-        self._user_subreddits = None
+        self._user_subreddits = None # This will be a pd.DataFrame
         
     @property
     def comments(self):
@@ -108,3 +111,42 @@ class UserScraper(object):
         print "Top Subreddits:"
         print subs_report
         self.get_activity_profile(plot)
+        
+        
+class SubredditScraper(object):
+    '''Generic utility for investigating a subreddit. '''
+    def __init__(self
+                , subreddit
+                , useragent = UA
+                ,r=None):
+        self.r = r
+        if not r:
+            self.r = praw.Reddit(useragent)
+        self.subreddit = r.get_subreddit(subreddit)
+        self._submissions = []
+        self._comments = []
+        self._users = set()
+        
+    @property
+    def submissions(self):
+        if not self._submissions:
+            for subm in self.subreddit.get_new(limit=None):
+                self._submissions.append(subm)
+        return self._submissions
+        
+    @property
+    def comments(self):
+        if not self._comments:
+            for subm in self.submissions:
+                self._comments.extend(flatten_comments(subm.comments))
+        return self._comments
+        
+    @property
+    def users(self):
+        if not self._users:
+            for c in self.comments:
+                try:
+                    self._users.add(c.author.name)
+                except (praw.errors.InvalidUser, praw.errors.BadUsername): # hopefully one of these is right..?
+                    continue
+                
