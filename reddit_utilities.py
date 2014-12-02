@@ -10,6 +10,7 @@ class UserScraper(object):
                 , username
                 , useragent = 'Scraper class for investigating redditors by /u/shaggorama'
                 ,r=None):
+        self.r = r
         if not r:
             self.r = praw.Reddit(useragent)
         self.user = self.r.get_redditor(username)
@@ -30,7 +31,7 @@ class UserScraper(object):
         return self._submissions
     
     @property
-    def user_subreddits(self):
+    def subreddits(self):
         if not self._user_subreddits:
             self.get_user_subreddits()
         return self._user_subreddits
