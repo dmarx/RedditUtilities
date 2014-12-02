@@ -1,5 +1,5 @@
 import praw
-from praw.helpers import flatten_comments
+from praw.helpers import flatten_tree
 import time
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -122,7 +122,7 @@ class SubredditScraper(object):
         self.r = r
         if not r:
             self.r = praw.Reddit(useragent)
-        self.subreddit = r.get_subreddit(subreddit)
+        self.subreddit = self.r.get_subreddit(subreddit)
         self._submissions = []
         self._comments = []
         self._users = set()
@@ -138,7 +138,7 @@ class SubredditScraper(object):
     def comments(self):
         if not self._comments:
             for subm in self.submissions:
-                self._comments.extend(flatten_comments(subm.comments))
+                self._comments.extend(flatten_tree(subm.comments))
         return self._comments
         
     @property
@@ -147,6 +147,6 @@ class SubredditScraper(object):
             for c in self.comments:
                 try:
                     self._users.add(c.author.name)
-                except (praw.errors.InvalidUser, praw.errors.BadUsername): # hopefully one of these is right..?
+                except (praw.errors.InvalidUser, praw.errors.BadUsername, AttributeError): # hopefully one of these is right..?
                     continue
-                
+        return self._users
