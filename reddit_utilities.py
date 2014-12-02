@@ -95,12 +95,8 @@ class UserScraper(object):
             plt.show()
     
     def get_user_subreddits(self, use_comments=True, use_submissions=True, report=10):
-        if not self._submissions and use_submissions:
-            self.scrape_submissions()
-        if not self._comments and use_comments:
-            self.scrape_comments()
-        by_comment = [c.subreddit.display_name for c in self._comments]
-        by_submission = [c.subreddit.display_name for c in self._submissions]
+        by_comment = [c.subreddit.display_name for c in self.comments]
+        by_submission = [c.subreddit.display_name for c in self.submissions]
         self._user_subreddits = Counter(by_comment + by_submission)
         # main_subr = self._user_subreddits.most_common()
         # row = "{col1}\t{col2}\t{col3}"
