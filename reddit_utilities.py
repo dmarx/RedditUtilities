@@ -94,16 +94,17 @@ class UserScraper(object):
             self.activity_profile.plot()
             plt.show()
     
-    def get_user_subreddits(self, use_comments=True, use_submissions=True):
+    def get_user_subreddits(self):
         by_comment = [c.subreddit.display_name for c in self.comments]
         by_submission = [c.subreddit.display_name for c in self.submissions]
-        self._user_subreddits = Counter(by_comment + by_submission)
+        self._user_subreddits = pd.DataFrame({'comments':Counter(by_comment), 'submissions':Counter(by_submission)})
+        self._user_subreddits = self._user_subreddits.fillna(0)
+        self._user_subreddits['total'] = self._user_subreddits.sum(axis=1)
+        self._user_subreddits = self._user_subreddits.sort('total', ascending=False)
     
     def investigate_user(self, plot=True, n_subreddits=10):
         """ Run the whole suite """        
-        #self.get_user_subreddits(report)
-        subs_report = self.subreddits.most_common(n_subreddits)
+        subs_report = self.subreddits.ix[:n_subreddits, :]
         print "Top Subreddits:"
-        for count, sub in subs_report:
-            print count, '\t', sub
+        print subs_report
         self.get_activity_profile(plot)
