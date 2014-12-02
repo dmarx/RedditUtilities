@@ -15,6 +15,7 @@ class UserScraper(object):
         self.user = self.r.get_redditor(username)
         self._comments = []
         self._submissions = []
+        self._user_subreddits = None
         
     @property
     def comments(self):
@@ -27,6 +28,12 @@ class UserScraper(object):
         if not self._submissions:
             self.scrape_submissions()
         return self._submissions
+    
+    @property
+    def user_subreddits(self):
+        if not self._user_subreddits:
+            self.get_user_subreddits()
+        return self._user_subreddits
     
     def scrape_comments(self):
         print "\nGetting comments"
@@ -93,16 +100,16 @@ class UserScraper(object):
             self.scrape_comments()
         by_comment = [c.subreddit.display_name for c in self._comments]
         by_submission = [c.subreddit.display_name for c in self._submissions]
-        self.user_subreddits = Counter(by_comment + by_submission)
-        main_subr = self.user_subreddits.most_common()
-        row = "{col1}\t{col2}\t{col3}"
-        if report >0:
-            print
-            print row.format(col1="Rank", col2="Count", col3="Subreddit")
-        while report>0:            
-            report += -1            
-            record = main_subr[report]
-            print row.format(col1=report+1, col2=record[1], col3=record[0])
+        self._user_subreddits = Counter(by_comment + by_submission)
+        # main_subr = self._user_subreddits.most_common()
+        # row = "{col1}\t{col2}\t{col3}"
+        # if report >0:
+            # print
+            # print row.format(col1="Rank", col2="Count", col3="Subreddit")
+        # while report>0:            
+            # report += -1            
+            # record = main_subr[report]
+            # print row.format(col1=report+1, col2=record[1], col3=record[0])
     
     def investigate_user(self, plot=True, report=10):
         """ Run the whole suite """        
