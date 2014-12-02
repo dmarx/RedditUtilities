@@ -37,11 +37,11 @@ class UserScraper(object):
         return self._user_subreddits
     
     def scrape_comments(self):
-        print "\nGetting comments"
+        print "Getting comments"
         self.scrape_content('comments')
     
     def scrape_submissions(self):
-        print "\nGetting submissions"
+        print "Getting submissions"
         self.scrape_content('posts')
     
     def scrape_content(self, type, kargs={}):
@@ -60,7 +60,7 @@ class UserScraper(object):
                     print n, type, "scraped"
             else:                
                 break
-        print n, type, "scraped"
+        print n, type, "scraped\n"
     
     def content_activity_profile(self, content):        
         pivot = {}
@@ -94,21 +94,16 @@ class UserScraper(object):
             self.activity_profile.plot()
             plt.show()
     
-    def get_user_subreddits(self, use_comments=True, use_submissions=True, report=10):
+    def get_user_subreddits(self, use_comments=True, use_submissions=True):
         by_comment = [c.subreddit.display_name for c in self.comments]
         by_submission = [c.subreddit.display_name for c in self.submissions]
         self._user_subreddits = Counter(by_comment + by_submission)
-        # main_subr = self._user_subreddits.most_common()
-        # row = "{col1}\t{col2}\t{col3}"
-        # if report >0:
-            # print
-            # print row.format(col1="Rank", col2="Count", col3="Subreddit")
-        # while report>0:            
-            # report += -1            
-            # record = main_subr[report]
-            # print row.format(col1=report+1, col2=record[1], col3=record[0])
     
-    def investigate_user(self, plot=True, report=10):
+    def investigate_user(self, plot=True, n_subreddits=10):
         """ Run the whole suite """        
-        self.get_user_subreddits(report)
+        #self.get_user_subreddits(report)
+        subs_report = self.subreddits.most_common(n_subreddits)
+        print "Top Subreddits:"
+        for count, sub in subs_report:
+            print count, '\t', sub
         self.get_activity_profile(plot)
