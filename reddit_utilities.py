@@ -17,7 +17,7 @@ class UserScraper(object):
         '''Generic function for scraping comments or posts'''
         funcs = {'comments':self.user.get_comments, 'posts':self.user.get_submitted}
         memo  = {'comments':self.comments,          'posts':self.submissions}
-        params = {'limit':None, 'url_data':{'limit':100} }        
+        params = {'limit':None}        
         params.update(kargs)
         gen = apply(funcs[type], [], params)
         n=0
